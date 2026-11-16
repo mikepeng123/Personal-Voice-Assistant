@@ -1,0 +1,10 @@
+# Stage 0-1
+ollama>=0.4
+qdrant-client>=1.10
+# Stage 3
+sounddevice
+numpy
+mlx-whisper; sys_platform == "darwin" and platform_machine == "arm64"
+faster-whisper; sys_platform != "darwin" or platform_machine != "arm64"
+# Stage 5
+streamlit>=1.37

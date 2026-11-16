@@ -1,0 +1,60 @@
+# All settings live here. Nothing in the code should hard-code a model, path or name.
+
+[models]
+ollama_host = "http://localhost:11434"
+chat_model = "gemma4:12b-mlx"      # any Ollama model that supports tool calling
+embed_model = "nomic-embed-text"
+keep_alive = "30m"                  # keep the chat model loaded between requests
+request_timeout = 90                # seconds without any answer from Ollama before giving up
+temperature = 0.2
+think = false                       # no hidden reasoning: much faster tool calls
+
+[assistant]
+name = "Loop"
+max_history_turns = 8               # user turns kept in the conversation
+max_tool_steps = 6                  # model/tool round trips per request
+fast_confirmations = true           # confirm bookings/moves/deletes from the tool result, skipping a model call
+
+[speech]
+# Text-to-speech program; the sentence is appended as the last argument.
+# macOS: ["say", "-r", "190"]  or with a voice: ["say", "-v", "Samantha", "-r", "190"]
+# Linux: ["espeak-ng", "-s", "170"]
+tts_command = ["say", "-r", "190"]
+
+[audio]
+sample_rate = 16000
+frame_ms = 30
+start_factor = 3.0          # speech = this many times louder than the room noise
+min_rms = 0.006             # ...and at least this loud (raise it in a noisy room)
+end_silence_s = 0.6         # an utterance ends after this much quiet
+preroll_s = 0.5             # audio kept from before the start, so the first syllable survives
+join_gap_s = 0.5            # a pause this much longer than end_silence_s still joins two pieces
+min_speech_s = 0.25         # shorter bursts (a cough, a click) are ignored
+max_utterance_s = 15
+unmute_delay_s = 0.3        # mic stays deaf this long after speaking, for the echo
+listen_tone = ["afplay", "/System/Library/Sounds/Tink.aiff"]   # [] for no tone
+
+[stt]
+engine = "mlx-whisper"      # Apple Silicon. Elsewhere: "faster-whisper"
+model = "mlx-community/whisper-large-v3-turbo"   # faster-whisper: "small.en"
+language = "en"
+initial_prompt = "Okay Loop."                    # nudges Whisper toward spelling the name right
+ignore_phrases = ["thanks for watching", "thank you for watching", "subscribe", "you"]
+
+[wake]
+# Spellings speech-to-text produces for the name. Add any you see in "heard:" lines.
+words = ["loop", "loops", "loup", "loupe", "lupe", "luup", "lou", "lu", "loo", "lube"]
+follow_up_s = 8             # after a reply, no wake word needed for this long
+
+[paths]
+appointments_db = "data/appointments.db"
+log_file = "logs/assistant.log"
+
+[memory]
+qdrant_url = "http://localhost:6333"
+collection = "loop_memories"
+search_limit = 3            # memories added to each request
+min_score = 0.5             # ...if at least this similar to the request
+same_score = 0.9            # a new fact this similar to an old one replaces it
+query_prefix = "search_query: "        # nomic-embed-text wants these; use "" for other models
+document_prefix = "search_document: "
